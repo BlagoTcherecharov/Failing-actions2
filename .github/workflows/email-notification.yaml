@@ -1,0 +1,33 @@
+name: CI with Email Notification
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          exit 1  # Simulate failure
+
+      - name: Send email on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "🚨 GitHub Action Failed: ${{ github.workflow }}"
+          body: |
+            The workflow **${{ github.workflow }}** in repo **${{ github.repository }}** has failed.
+            Job: ${{ github.job }}
+            Commit: ${{ github.sha }}
+            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions Bot
